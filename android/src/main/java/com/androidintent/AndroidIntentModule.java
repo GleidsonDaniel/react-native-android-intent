@@ -2,6 +2,13 @@ package com.androidintent;
 
 import androidx.annotation.NonNull;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+
+import android.content.pm.PackageManager;
+import android.content.Context;
+
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -11,12 +18,14 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.BaseActivityEventListener;
 import com.facebook.react.bridge.ActivityEventListener;
 
-
-
 @ReactModule(name = AndroidIntentModule.NAME)
 public class AndroidIntentModule extends ReactContextBaseJavaModule {
-  public static final String NAME = "AndroidIntent";
+    private final ReactApplicationContext reactContext;
+    private Promise intentPromise;
+    private Context ctx;
 
+  public static final String NAME = "AndroidIntent";
+  
   public AndroidIntentModule(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
