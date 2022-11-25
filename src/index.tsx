@@ -1,22 +1,9 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules } from 'react-native';
 
-const LINKING_ERROR =
-  `The package 'react-native-android-intent' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n';
+export function openLink(url: string, packageName: string): Promise<void> {
+  return NativeModules.AndroidIntent.openLink(url, packageName);
+}
 
-const AndroidIntent = NativeModules.AndroidIntent
-  ? NativeModules.AndroidIntent
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
-
-export function multiply(a: number, b: number): Promise<number> {
-  return AndroidIntent.multiply(a, b);
+export function isPackageInstalled( packageName: string): Promise<boolean> {
+  return NativeModules.AndroidIntent.isPackageInstalled(packageName);
 }

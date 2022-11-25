@@ -7,6 +7,11 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.BaseActivityEventListener;
+import com.facebook.react.bridge.ActivityEventListener;
+
+
 
 @ReactModule(name = AndroidIntentModule.NAME)
 public class AndroidIntentModule extends ReactContextBaseJavaModule {
@@ -14,6 +19,9 @@ public class AndroidIntentModule extends ReactContextBaseJavaModule {
 
   public AndroidIntentModule(ReactApplicationContext reactContext) {
     super(reactContext);
+    this.reactContext = reactContext;
+    this.ctx = reactContext.getApplicationContext();
+    reactContext.addActivityEventListener(mActivityEventListener);
   }
 
   @Override
@@ -22,11 +30,44 @@ public class AndroidIntentModule extends ReactContextBaseJavaModule {
     return NAME;
   }
 
+    @ReactMethod
+    public void openLink(String url, String packageName, final Promise promise) {
+        intentPromise = promise;
+        Uri uri = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        if (packageName != null) {
+            intent.setPackage(packageName);
+        }
+        try {
+            this.reactContext.startActivityForResult(intent, 5864, null);
+        } catch (Exception e) {
+            intentPromise.reject("Failed", "NO APP FOUND");
+        }
+    }
 
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
-  @ReactMethod
-  public void multiply(double a, double b, Promise promise) {
-    promise.resolve(a * b);
-  }
+    @ReactMethod
+    public void isPackageInstalled(String packageName, Callback cb) {
+        PackageManager pm = this.ctx.getPackageManager();
+        try {
+            pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            cb.invoke(true);
+        } catch (Exception e) {
+            cb.invoke(false);
+        }
+    }
+
+    private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
+    //listener for activity
+     @Override
+    public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+        if (intentPromise != null) {
+            if (data != null) {
+                String res = data.getStringExtra("response");
+                intentPromise.resolve(res);
+            } else {
+                intentPromise.reject("Failed", "");
+            }
+        }
+    }
+    };
 }
